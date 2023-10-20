@@ -2,22 +2,18 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+provider "random" {}
+
 # EC2 for Ghost
 resource "aws_instance" "ghost_server" {
-  ami           = "ami-06dd92ecc74fdfb36"  # Please replace with the appropriate Ubuntu 22 AMI ID for eu-central-1 when it's available.
+  ami           = "ami-0xxxxxx"  # Replace with the appropriate Ubuntu 22 AMI ID for eu-central-1 when it's available.
   instance_type = "t2.micro"
-
-  key_name               = aws_key_pair.deployer.key_name
+  key_name      = "your_existing_key_name"  # Replace with the name of your existing key.
   vpc_security_group_ids = [aws_security_group.ghost_sg.id]
 
   tags = {
     Name = "GhostServer"
   }
-}
-
-resource "aws_key_pair" "deployer" {
-  key_name   = "deployer-key"
-  public_key = file("~/.ssh/id_rsa.pub")  # Assuming you're using your existing SSH public key. Adjust the path as needed.
 }
 
 resource "aws_security_group" "ghost_sg" {
@@ -46,6 +42,12 @@ resource "aws_security_group" "ghost_sg" {
   }
 }
 
+# Generate random password for RDS
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+}
+
 # RDS for MySQL
 resource "aws_db_instance" "ghost_db" {
   allocated_storage    = 20
@@ -55,7 +57,12 @@ resource "aws_db_instance" "ghost_db" {
   instance_class       = "db.t2.micro"
   name                 = "ghost_db"
   username             = "ghostadmin"
-  password             = "yourpasswordhere"
+  password             = random_password.db_password.result
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
+}
+
+output "db_password" {
+  value     = random_password.db_password.result
+  sensitive = true
 }
