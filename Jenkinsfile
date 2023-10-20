@@ -55,6 +55,8 @@ pipeline {
     }
 
     post {
-        // post conditions
+    always {
+        echo "This pipeline has finished."
+        }
     }
 }
