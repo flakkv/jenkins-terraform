@@ -3,7 +3,6 @@ pipeline {
 
     environment {
         AWS_DEFAULT_REGION = 'eu-central-1'
-        TF_VAR_db_password = ''  // To store the database password
     }
 
     stages {
@@ -42,10 +41,6 @@ pipeline {
         stage('Outputs') {
             steps {
                 script {
-                    // Output the MySQL database password
-                    TF_VAR_db_password = sh(script: 'terraform output db_password', returnStdout: true).trim()
-                    echo "Database password is: ${TF_VAR_db_password}"
-
                     // Output the IP of the Ghost server
                     def ghostIP = sh(script: 'terraform output ghost_server_ip', returnStdout: true).trim()
                     echo "Ghost server IP: ${ghostIP}"
@@ -55,8 +50,8 @@ pipeline {
     }
 
     post {
-    always {
-        echo "This pipeline has finished."
+        always {
+            echo "This pipeline has finished."
         }
     }
 }

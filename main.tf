@@ -2,25 +2,34 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-provider "random" {}
-
 resource "aws_instance" "ghost_server" {
-  ami           = "ami-06dd92ecc74fdfb36"  # Replace with the appropriate Ubuntu 22 AMI ID for eu-central-1 when it's available.
+  ami           = "ami-06dd92ecc74fdfb36"  # Remember to replace this with the appropriate AMI for your region.
   instance_type = "t2.micro"
   key_name      = "e570"  # Replace with the name of your existing key.
   vpc_security_group_ids = [aws_security_group.ghost_sg.id]
 
   user_data = <<-EOT
               #!/bin/bash
+              adduser ghostuser --gecos "First Last,RoomNumber,WorkPhone,HomePhone" --disabled-password
+              echo "ghostuser:ghost_password" | chpasswd
+              usermod -aG sudo ghostuser
+
               apt-get update
-              apt-get install -y nginx mysql-client
-              curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash
+              apt-get upgrade -y
+              apt-get install -y nginx mysql-server ca-certificates curl gnupg ufw
+
+              ufw allow 'Nginx Full'
+
+              mkdir -p /etc/apt/keyrings
+              curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+              echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_18.x $(lsb_release -cs) main" > /etc/apt/sources.list.d/nodesource.list
+
+              apt-get update
               apt-get install -y nodejs
-              node -v && npm -v
               npm install ghost-cli@latest -g
-              PUBLIC_DNS=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
-              ghost install --db=mysql --dbhost=${aws_db_instance.ghost_db.address} --dbuser=ghostadmin --dbpass=${random_password.db_password.result} --dbname=ghost_db --url=http://temporary-url-placeholder --no-prompt --no-stack
-              EOT
+
+              su - ghostuser -c 'mkdir -p /var/www/ghost && cd /var/www/ghost && ghost install --db=mysql --dbhost=localhost --dbuser=root --dbname=ghost_db --url=http://temporary-url-placeholder --no-prompt --no-stack'
+  EOT
 
   tags = {
     Name = "GhostServer"
@@ -44,29 +53,6 @@ resource "aws_security_group" "ghost_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-resource "random_password" "db_password" {
-  length  = 16
-  special = true
-}
-
-resource "aws_db_instance" "ghost_db" {
-  allocated_storage    = 20
-  storage_type         = "gp2"
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = "db.t2.micro"
-  identifier           = "ghostdb"
-  username             = "ghostadmin"
-  password             = random_password.db_password.result
-  parameter_group_name = "default.mysql5.7"
-  skip_final_snapshot  = true
-}
-
-output "db_password" {
-  value = random_password.db_password.result
-  sensitive = true
 }
 
 output "ghost_server_ip" {
