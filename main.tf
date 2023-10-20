@@ -66,6 +66,7 @@ resource "aws_db_instance" "ghost_db" {
 
 output "db_password" {
   value = random_password.db_password.result
+  sensitive = true
 }
 
 output "ghost_server_ip" {
