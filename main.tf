@@ -57,7 +57,7 @@ resource "aws_db_instance" "ghost_db" {
   engine               = "mysql"
   engine_version       = "5.7"
   instance_class       = "db.t2.micro"
-  identifier           = "ghost_db"
+  identifier           = "ghostdb"
   username             = "ghostadmin"
   password             = random_password.db_password.result
   parameter_group_name = "default.mysql5.7"
