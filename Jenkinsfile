@@ -55,8 +55,6 @@ pipeline {
     }
 
     post {
-        always {
-            // Any cleanup steps if necessary
-        }
+        // post conditions
     }
 }
