@@ -19,7 +19,7 @@ resource "aws_instance" "ghost_server" {
               node -v && npm -v
               npm install ghost-cli@latest -g
               PUBLIC_DNS=$(curl -s http://169.254.169.254/latest/meta-data/public-hostname)
-              ghost install --db=mysql --dbhost=${aws_db_instance.ghost_db.address} --dbuser=ghostadmin --dbpass=${random_password.db_password.result} --dbname=ghost_db --url=http://${PUBLIC_DNS} --no-prompt --no-stack
+              ghost install --db=mysql --dbhost=${aws_db_instance.ghost_db.address} --dbuser=ghostadmin --dbpass=${random_password.db_password.result} --dbname=ghost_db --url=http://${self.private_ip} --no-prompt --no-stack
               EOT
 
   tags = {
