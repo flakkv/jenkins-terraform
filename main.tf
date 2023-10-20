@@ -6,9 +6,9 @@ provider "random" {}
 
 # EC2 for Ghost
 resource "aws_instance" "ghost_server" {
-  ami           = "ami-0xxxxxx"  # Replace with the appropriate Ubuntu 22 AMI ID for eu-central-1 when it's available.
+  ami           = "ami-06dd92ecc74fdfb36"  # Replace with the appropriate Ubuntu 22 AMI ID for eu-central-1 when it's available.
   instance_type = "t2.micro"
-  key_name      = "your_existing_key_name"  # Replace with the name of your existing key.
+  key_name      = "e570"  # Replace with the name of your existing key.
   vpc_security_group_ids = [aws_security_group.ghost_sg.id]
 
   tags = {
