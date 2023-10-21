@@ -7,8 +7,8 @@ resource "aws_security_group" "ghost_sg" {
   description = "Security group for Ghost Server"
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -48,14 +48,14 @@ resource "aws_instance" "ghost_server" {
                   image: ghost:4-alpine
                   restart: always
                   ports:
-                    - 8080:2368
+                    - 443:2368
                   environment:
                     database__client: mysql
                     database__connection__host: db
                     database__connection__user: root
                     database__connection__password: example
                     database__connection__database: ghost
-                    url: http://localhost:8080
+                    url: https://localhost:8080
                 db:
                   image: mysql:8.0
                   restart: always
