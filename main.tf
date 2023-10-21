@@ -36,7 +36,9 @@ resource "aws_instance" "ghost_server" {
               chmod a+r /etc/apt/keyrings/docker.gpg
               echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
               apt-get update
-              apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+              apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin
+              curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              chmod +x /usr/local/bin/docker-compose
 
               cat > /root/docker-compose.yml <<EOF
               version: '3.1'
@@ -60,7 +62,7 @@ resource "aws_instance" "ghost_server" {
                   environment:
                     MYSQL_ROOT_PASSWORD: example
               EOF
-              docker-compose -f /root/docker-compose.yml up -d
+              docker-compose -f /root/docker-compose.yml up -d >> /root/docker_compose_output.log 2>&1
   EOT
 
   tags = {
