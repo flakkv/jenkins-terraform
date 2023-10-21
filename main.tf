@@ -55,7 +55,7 @@ resource "aws_instance" "ghost_server" {
                     database__connection__user: root
                     database__connection__password: example
                     database__connection__database: ghost
-                    url: https://localhost:8080
+                    url: https://localhost:443
                 db:
                   image: mysql:8.0
                   restart: always
