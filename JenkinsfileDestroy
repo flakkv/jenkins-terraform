@@ -1,0 +1,47 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_DEFAULT_REGION = 'eu-central-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Assuming you've set up a GitHub SCM in Jenkins
+                checkout scm
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                script {
+                    // Initialize Terraform
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Destroy') {
+            steps {
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',
+                    accessKeyVariable: 'AWS_ACCESS_KEY_ID',
+                    secretKeyVariable: 'AWS_SECRET_ACCESS_KEY',
+                    credentialsId: 'aws-secret'
+                ]]) {
+                    script {
+                        // Destroy Terraform-managed infrastructure
+                        sh 'terraform destroy -auto-approve'
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo "Destroy pipeline has finished."
+        }
+    }
+}
